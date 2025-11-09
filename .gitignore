@@ -1,5 +1,9 @@
 data
 prepared
+
+
+debug_gt.jpg
+detections_preview.jpg
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

@@ -50,11 +50,13 @@ def main(split, iou_thr=0.5, nms_thr=0.4):
     clf = joblib.load("hog_svm.joblib")
     df = to_boxes(pd.read_csv(csv_path))
     by = df.groupby("filename")
+    by = list(by)[:10]  # tylko pierwsze 10 zdjęć
 
     y_true, y_score = [], []
     cnt_true, cnt_pred = [], []
 
-    for fname, g in by:
+    from tqdm import tqdm
+    for fname, g in tqdm(by, desc=f"Evaluating {split}"):
         img = cv2.imread(os.path.join(im_dir, fname))
         if img is None: continue
         gt = g[["xmin","ymin","xmax","ymax"]].astype(int).values.tolist()

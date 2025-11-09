@@ -1,5 +1,5 @@
 import numpy as np
-def nms(boxes, scores, iou_thresh=0.4):
+def nms(boxes, scores, iou_thresh=0.2):
     if not boxes: return [], []
     boxes = np.array(boxes, float); scores=np.array(scores, float)
     x1,y1,x2,y2 = boxes[:,0],boxes[:,1],boxes[:,2],boxes[:,3]

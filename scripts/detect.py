@@ -17,7 +17,7 @@ def sliding(gray, step=8, win=(64,128)):
         for x in range(0, W-win[0]+1, step):
             yield x,y,gray[y:y+win[1], x:x+win[0]]
 
-def detect_image(img_path, model="hog_svm.joblib", score_thr=0.5):
+def detect_image(img_path, model="hog_svm.joblib", score_thr=1.5):
     clf = joblib.load(model)
     img = cv2.imread(img_path); gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     boxes, scores = [], []
@@ -36,7 +36,7 @@ def detect_image(img_path, model="hog_svm.joblib", score_thr=0.5):
         cv2.rectangle(img, (b[0],b[1]), (b[2],b[3]), (0,255,0), 2)
     out="detections_preview.jpg"
     cv2.imwrite(out, img)
-    print("Saved:", out, "Detections:", len(boxes))
+    print("Zapisano:", out, "Wykryto:", len(boxes))
 
 if __name__=="__main__":
-    detect_image("data/valid/images/<wstaw_tu_jedno_ze_zdjec>.jpg")
+    detect_image("data/valid/images/group-of-people-in-a-meeting-1367272-2_jpg.rf.9a2d1e6086b3691f11d52167cad402fa.jpg")
