@@ -12,17 +12,6 @@ def to_boxes(df):
         boxes = df[[fcol,x1,y1,x2,y2]].copy()
         boxes.columns = ["filename","xmin","ymin","xmax","ymax"]
         return boxes
-    elif all(k in cols for k in ["x","y","width","height","filename"]):
-        # zamiana (x,y,w,h) -> (xmin,ymin,xmax,ymax)
-        fcol = cols["filename"]
-        x,y,w,h = [cols[k] for k in ["x","y","width","height"]]
-        tmp = df[[fcol,x,y,w,h]].copy()
-        tmp["xmin"] = tmp[x]
-        tmp["ymin"] = tmp[y]
-        tmp["xmax"] = tmp[x] + tmp[w]
-        tmp["ymax"] = tmp[y] + tmp[h]
-        boxes = tmp[[fcol,"xmin","ymin","xmax","ymax"]]
-        return boxes
     else:
         raise ValueError(f"Nieznany format CSV. Kolumny: {list(df.columns)}")
 
