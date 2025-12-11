@@ -47,7 +47,7 @@ def detect_img(gray, clf):
 def main(split, iou_thr=0.5, nms_thr=0.4):
     im_dir=f"data/{split}/images"
     csv_path=f"data/{split}/annotations.csv"
-    clf = joblib.load("hog_svm.joblib")
+    clf = joblib.load("hog_svm_test_metrics_6x6.joblib")
     df = to_boxes(pd.read_csv(csv_path))
     by = df.groupby("filename")
     by = list(by)[:10]  # tylko pierwsze 10 zdjęć
