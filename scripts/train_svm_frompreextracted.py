@@ -20,7 +20,7 @@ CONFIG = {
         "neg_dir": "features_neg"
     },
     "batch_size": 5000,
-    "model_out": "hog_svm_test_metrics_6x6.joblib",
+    "model_out": "hog_8x8-4x4-9-SVC-default.joblib",
     "shuffle": True,
     "n_epochs": 1,
     "log_csv": "learning_curve.csv",
@@ -30,13 +30,13 @@ CONFIG = {
         "random_state": 123,
         "verbose": 1,
         "class_weight": "balanced",
-        "max_iter": 5000,
+        "max_iter": 50,
     },
     "svc": {
         "random_state": 123,
         "verbose": 1,
         "class_weight": "balanced",
-        "max_iter": 5000,
+        "max_iter": 50,
     }
 }
 
@@ -110,7 +110,14 @@ def train_sgd_svm(cfg):
 
             clf.fit(X_batch, y_batch)
 
+        # --- zapis modelu ---
+        joblib.dump(clf, cfg["model_out"])
+        print("Model zapisany:", cfg["model_out"])
+
         # --- ewaluacja po epoce ---
+
+
+        print("\n-- ewaluacja po epoce --")
         X_all, y_all = [], []
         for batch in load_feature_batches(pos_files, batch_size):
             X_all.append(batch)

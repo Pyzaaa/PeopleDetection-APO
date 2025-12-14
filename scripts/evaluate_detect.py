@@ -35,8 +35,8 @@ def detect_img(gray, clf):
         for y in range(0,cur.shape[0]-128+1,8):
             for x in range(0,cur.shape[1]-64+1,8):
                 p = cur[y:y+128, x:x+64]
-                f = hog(p, pixels_per_cell=(8,8), cells_per_block=(2,2),
-                        orientations=9, block_norm="L2-Hys", feature_vector=True)
+                f = hog(p, pixels_per_cell=(6,6), cells_per_block=(3,3),
+                        orientations=12, block_norm="L2-Hys", feature_vector=True)
                 s = clf.decision_function([f])[0]
                 sx,sy=int(x/inv),int(y/inv); ex,ey=int((x+64)/inv),int((y+128)/inv)
                 boxes.append([sx,sy,ex,ey]); scores.append(float(s))
@@ -44,10 +44,10 @@ def detect_img(gray, clf):
         inv/=scale
     return boxes, scores
 
-def main(split, iou_thr=0.5, nms_thr=0.4):
+def main(split, iou_thr=0.5, nms_thr=0.1):
     im_dir=f"data/{split}/images"
     csv_path=f"data/{split}/annotations.csv"
-    clf = joblib.load("hog_svm_test_metrics_6x6.joblib")
+    clf = joblib.load("hog_6x6-3x3-12_SGD-v2.joblib")
     df = to_boxes(pd.read_csv(csv_path))
     by = df.groupby("filename")
     by = list(by)[:10]  # tylko pierwsze 10 zdjęć
@@ -78,7 +78,7 @@ def main(split, iou_thr=0.5, nms_thr=0.4):
         cnt_true.append(len(gt)); cnt_pred.append(len(boxes))
 
     # punktowy PR/F1 przy progu 0.5 oraz AP (mAP dla klasy 1)
-    y_bin = [1 if s>=0.5 else 0 for s in y_score]
+    y_bin = [1 if s>=4 else 0 for s in y_score]
     precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_bin, average="binary", zero_division=0)
     mAP = average_precision_score(y_true, y_score)
     mae = mean_absolute_error(cnt_true, cnt_pred)
