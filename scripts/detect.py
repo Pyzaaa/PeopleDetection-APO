@@ -1,15 +1,21 @@
 import cv2, joblib
 from skimage.feature import hog
 from utils import nms
+import numpy as np
 
 def pyramid(gray, scale=1.25, min_size=(128,128)):
     yield gray, 1.0
+    inv = 1.0
+    cur = gray
     while True:
-        h,w = gray.shape[:2]
-        w2,h2 = int(w/scale), int(h/scale)
-        if h2<min_size[1] or w2<min_size[0]: break
-        gray = cv2.resize(gray, (w2,h2))
-        yield gray, (1.0/scale)
+        h, w = cur.shape[:2]
+        w2, h2 = int(w/scale), int(h/scale)
+        if h2 < min_size[1] or w2 < min_size[0]:
+            break
+        cur = cv2.resize(cur, (w2, h2))
+        inv *= (1.0/scale)          # kumulacja
+        yield cur, inv
+
 
 def sliding(gray, step=8, win=(64,128)):
     H,W = gray.shape[:2]
@@ -24,8 +30,9 @@ def detect_image(img_path, model="hog_svm.joblib", score_thr=1.9):
     inv=1.0
     for scaled, inv in pyramid(gray):
         for x,y,patch in sliding(scaled):
-            f = hog(patch, pixels_per_cell=(6,6), cells_per_block=(3,3),
-                    orientations=12, block_norm="L2-Hys", feature_vector=True)
+
+            f = hog(patch, pixels_per_cell=(8,8), cells_per_block=(2,2),
+                    orientations=9, block_norm="L2-Hys", feature_vector=True)
             s = clf.decision_function([f])[0]
             if s >= score_thr:
                 sx,sy = int(x/inv), int(y/inv)
