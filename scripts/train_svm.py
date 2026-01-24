@@ -8,12 +8,12 @@ import joblib
 
 POS_DIR = "prepared/train/pos"
 NEG_DIR = "prepared/train/neg"
-MODEL_PATH = "hog_svm.joblib"
+MODEL_PATH = "hog_svm2.joblib"
 
 def feats(d):
     X=[]
     for p in tqdm(sorted(glob(os.path.join(d,"*.png"))), desc=f"HOG {d}"):
-        
+
         im = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
         f = hog(im, pixels_per_cell=(8,8), cells_per_block=(2,2),
                 orientations=9, block_norm="L2-Hys", feature_vector=True)

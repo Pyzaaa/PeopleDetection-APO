@@ -24,8 +24,8 @@ def detect_image(img_path, model="hog_svm.joblib", score_thr=1.9):
     inv=1.0
     for scaled, inv in pyramid(gray):
         for x,y,patch in sliding(scaled):
-            f = hog(patch, pixels_per_cell=(8,8), cells_per_block=(2,2),
-                    orientations=9, block_norm="L2-Hys", feature_vector=True)
+            f = hog(patch, pixels_per_cell=(6,6), cells_per_block=(3,3),
+                    orientations=12, block_norm="L2-Hys", feature_vector=True)
             s = clf.decision_function([f])[0]
             if s >= score_thr:
                 sx,sy = int(x/inv), int(y/inv)

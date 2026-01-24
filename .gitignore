@@ -2,6 +2,15 @@ data
 prepared
 
 
+features_pos
+features_neg
+preextracted
+scripts/learning_curve.csv
+scripts/learning_curve_acc.npy
+scripts/learning_curve_prec.npy
+scripts/learning_curve_rec.npy
+
+.idea*
 debug_gt.jpg
 detections_preview.jpg
 # Byte-compiled / optimized / DLL files

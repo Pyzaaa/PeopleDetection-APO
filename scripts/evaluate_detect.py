@@ -35,8 +35,8 @@ def detect_img(gray, clf, score_thr=2.0):
         for y in range(0,cur.shape[0]-128+1,8):
             for x in range(0,cur.shape[1]-64+1,8):
                 p = cur[y:y+128, x:x+64]
-                f = hog(p, pixels_per_cell=(8,8), cells_per_block=(2,2),
-                        orientations=9, block_norm="L2-Hys", feature_vector=True)
+                f = hog(p, pixels_per_cell=(6,6), cells_per_block=(3,3),
+                        orientations=12, block_norm="L2-Hys", feature_vector=True)
                 s = clf.decision_function([f])[0]
                 if s < score_thr:
                     continue
@@ -49,7 +49,7 @@ def detect_img(gray, clf, score_thr=2.0):
 def main(split, iou_thr=0.5, nms_thr=0.2, score_thr=1.9):
     im_dir=f"data/{split}/images"
     csv_path=f"data/{split}/annotations.csv"
-    clf = joblib.load("hog_svm.joblib")
+    clf = joblib.load("hog_6x6-3x3-12_SGD-v2.joblib")
     df = to_boxes(pd.read_csv(csv_path))
     by = df.groupby("filename")
     by = list(by)[:10] 
