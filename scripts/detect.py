@@ -17,7 +17,7 @@ def sliding(gray, step=8, win=(64,128)):
         for x in range(0, W-win[0]+1, step):
             yield x,y,gray[y:y+win[1], x:x+win[0]]
 
-def detect_image(img_path, model="hog_svm.joblib", score_thr=1.5):
+def detect_image(img_path, model="hog_svm.joblib", score_thr=1.9):
     clf = joblib.load(model)
     img = cv2.imread(img_path); gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     boxes, scores = [], []
@@ -31,7 +31,7 @@ def detect_image(img_path, model="hog_svm.joblib", score_thr=1.5):
                 sx,sy = int(x/inv), int(y/inv)
                 ex,ey = int((x+64)/inv), int((y+128)/inv)
                 boxes.append([sx,sy,ex,ey]); scores.append(float(s))
-    boxes, scores = nms(boxes, scores, 0.4)
+    boxes, scores = nms(boxes, scores, 0.2)
     for b in boxes:
         cv2.rectangle(img, (b[0],b[1]), (b[2],b[3]), (0,255,0), 2)
     out="detections_preview.jpg"

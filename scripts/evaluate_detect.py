@@ -28,7 +28,7 @@ def to_boxes(df):
     else:
         raise ValueError("Nieznany format CSV")
 
-def detect_img(gray, clf):
+def detect_img(gray, clf, score_thr=2.0):
     boxes, scores = [], []
     cur=gray.copy(); inv=1.0; scale=1.25
     while cur.shape[0]>=128 and cur.shape[1]>=64:
@@ -38,19 +38,21 @@ def detect_img(gray, clf):
                 f = hog(p, pixels_per_cell=(8,8), cells_per_block=(2,2),
                         orientations=9, block_norm="L2-Hys", feature_vector=True)
                 s = clf.decision_function([f])[0]
+                if s < score_thr:
+                    continue
                 sx,sy=int(x/inv),int(y/inv); ex,ey=int((x+64)/inv),int((y+128)/inv)
                 boxes.append([sx,sy,ex,ey]); scores.append(float(s))
         cur = cv2.resize(cur, (int(cur.shape[1]/scale), int(cur.shape[0]/scale)))
         inv/=scale
     return boxes, scores
 
-def main(split, iou_thr=0.5, nms_thr=0.4):
+def main(split, iou_thr=0.5, nms_thr=0.2, score_thr=1.9):
     im_dir=f"data/{split}/images"
     csv_path=f"data/{split}/annotations.csv"
     clf = joblib.load("hog_svm.joblib")
     df = to_boxes(pd.read_csv(csv_path))
     by = df.groupby("filename")
-    by = list(by)[:10]  # tylko pierwsze 10 zdjęć
+    by = list(by)[:10] 
 
     y_true, y_score = [], []
     cnt_true, cnt_pred = [], []
@@ -60,7 +62,7 @@ def main(split, iou_thr=0.5, nms_thr=0.4):
         img = cv2.imread(os.path.join(im_dir, fname))
         if img is None: continue
         gt = g[["xmin","ymin","xmax","ymax"]].astype(int).values.tolist()
-        boxes, scores = detect_img(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), clf)
+        boxes, scores = detect_img(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), clf, score_thr=score_thr)
         boxes, scores = nms(boxes, scores, nms_thr)
 
         used=set()
@@ -77,7 +79,6 @@ def main(split, iou_thr=0.5, nms_thr=0.4):
 
         cnt_true.append(len(gt)); cnt_pred.append(len(boxes))
 
-    # punktowy PR/F1 przy progu 0.5 oraz AP (mAP dla klasy 1)
     y_bin = [1 if s>=0.5 else 0 for s in y_score]
     precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_bin, average="binary", zero_division=0)
     mAP = average_precision_score(y_true, y_score)
@@ -87,9 +88,19 @@ def main(split, iou_thr=0.5, nms_thr=0.4):
     print(f"Split: {split}")
     print(f"Precision: {precision:.4f}  Recall: {recall:.4f}  F1: {f1:.4f}  mAP: {mAP:.4f}")
     print(f"MAE (count): {mae:.3f}  RMSE (count): {rmse:.3f}")
+    
+    return {
+        "Precision": float(precision),
+        "Recall": float(recall),
+        "F1": float(f1),
+        "mAP": float(mAP),
+        "MAE": float(mae),
+        "RMSE": float(rmse),
+    }
 
 if __name__=="__main__":
     ap=argparse.ArgumentParser()
     ap.add_argument("--split", default="valid", choices=["valid","test"])
     args=ap.parse_args()
-    main(args.split)
+    main(args.split, score_thr=args.score_thr)
+
